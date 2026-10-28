@@ -50,10 +50,15 @@ if ( sb_cookie_consent_allows( 'marketing' ) ) {
 
 - `sb_cookie_consent_theme_colors` — default banner colors from the theme
 - `sb_cookie_consent_gated_handles` — map of `script_handle => category`
+- `sb_cookie_consent_scan_catalog` — extend auto-detect services/cookies
+
+## Auto-scan
+
+**Settings → SB Cookie Consent → Сканирай и добави автоматично** checks script handles, active plugins, and homepage HTML for GA/GTM, Meta Pixel, Hotjar, LinkedIn, TikTok, Microsoft Ads/Clarity, YouTube, Matomo. New rows are appended; save to keep them.
 
 ## Version
 
-1.1.0 — Categories, inventory, cookie policy shortcode, permanent policy link, reopen icon, script gating and cookie purge.
+1.2.0 — Auto-scan for common third-party cookies by category.
 
 ## License
 

@@ -28,6 +28,7 @@ class SB_Cookie_Consent_Admin {
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'wp_ajax_sb_cookie_consent_scan', array( $this, 'ajax_scan' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( SB_COOKIE_CONSENT_FILE ), array( $this, 'action_links' ) );
 	}
 
@@ -81,11 +82,66 @@ class SB_Cookie_Consent_Admin {
 			'sb-cookie-consent-admin',
 			'sbCookieConsentAdmin',
 			array(
+				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'sb_cookie_consent_scan' ),
+				'scanning' => __( 'Сканиране…', 'sb-cookie-consent' ),
+				'scanError'=> __( 'Сканирането не успя. Опитайте отново.', 'sb-cookie-consent' ),
 				'categories' => array(
 					'necessary'   => __( 'Необходими', 'sb-cookie-consent' ),
 					'preferences' => __( 'Предпочитания', 'sb-cookie-consent' ),
 					'analytics'   => __( 'Статистика', 'sb-cookie-consent' ),
 					'marketing'   => __( 'Маркетинг', 'sb-cookie-consent' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * AJAX: detect known third-party cookies from scripts/plugins/homepage.
+	 */
+	public function ajax_scan(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Нямате права.', 'sb-cookie-consent' ),
+				),
+				403
+			);
+		}
+
+		check_ajax_referer( 'sb_cookie_consent_scan', 'nonce' );
+
+		$existing = array();
+		if ( isset( $_POST['existing'] ) && is_array( $_POST['existing'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			foreach ( wp_unslash( $_POST['existing'] ) as $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$name = isset( $row['name'] ) ? sanitize_text_field( (string) $row['name'] ) : '';
+				if ( '' === $name ) {
+					continue;
+				}
+				$existing[] = array(
+					'name'     => $name,
+					'category' => isset( $row['category'] ) ? sanitize_key( (string) $row['category'] ) : '',
+				);
+			}
+		} else {
+			$existing = $this->settings->all()['cookies'];
+		}
+
+		$scanner = new SB_Cookie_Consent_Scanner();
+		$result  = $scanner->scan( is_array( $existing ) ? $existing : array() );
+
+		wp_send_json_success(
+			array(
+				'cookies'  => $result['cookies'],
+				'services' => $result['services'],
+				'message'  => sprintf(
+					/* translators: 1: number of cookies, 2: number of services */
+					__( 'Добавени предложения: %1$d (услуги: %2$d). Прегледайте и запазете.', 'sb-cookie-consent' ),
+					count( $result['cookies'] ),
+					count( $result['services'] )
 				),
 			)
 		);
@@ -257,7 +313,13 @@ class SB_Cookie_Consent_Admin {
 
 				<h2 class="title"><?php echo esc_html__( 'Регистър на бисквитките', 'sb-cookie-consent' ); ?></h2>
 				<p class="description">
-					<?php echo esc_html__( 'Попълнете всяка бисквитка. За незадължителни скриптове от WordPress добавете script handle(и) — плъгинът няма да ги изпълнява без съгласие. Име с * важи като маска при изтриване (напр. _ga*).', 'sb-cookie-consent' ); ?>
+					<?php echo esc_html__( 'Попълнете ръчно или сканирайте сайта за известни услуги (GA, Meta Pixel, GTM, Hotjar и др.). Script handle(и) блокират WP скриптове без съгласие. Име с * е маска при изтриване.', 'sb-cookie-consent' ); ?>
+				</p>
+				<p>
+					<button type="button" class="button button-secondary" id="sb-cc-scan-cookies">
+						<?php echo esc_html__( 'Сканирай и добави автоматично', 'sb-cookie-consent' ); ?>
+					</button>
+					<span id="sb-cc-scan-status" class="sb-cc-scan-status" role="status" aria-live="polite"></span>
 				</p>
 				<div class="sb-cc-cookies-wrap">
 					<table class="widefat striped sb-cc-cookies" id="sb-cc-cookies">

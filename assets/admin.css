@@ -76,3 +76,8 @@
 	max-width: 100%;
 	box-sizing: border-box;
 }
+
+.sb-cookie-consent-admin .sb-cc-scan-status {
+	margin-left: 0.75rem;
+	color: #646970;
+}
