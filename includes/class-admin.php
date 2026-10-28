@@ -259,38 +259,40 @@ class SB_Cookie_Consent_Admin {
 				<p class="description">
 					<?php echo esc_html__( 'Попълнете всяка бисквитка. За незадължителни скриптове от WordPress добавете script handle(и) — плъгинът няма да ги изпълнява без съгласие. Име с * важи като маска при изтриване (напр. _ga*).', 'sb-cookie-consent' ); ?>
 				</p>
-				<table class="widefat striped sb-cc-cookies" id="sb-cc-cookies">
-					<thead>
-						<tr>
-							<th><?php echo esc_html__( 'Име / маска', 'sb-cookie-consent' ); ?></th>
-							<th><?php echo esc_html__( 'Категория', 'sb-cookie-consent' ); ?></th>
-							<th><?php echo esc_html__( 'Доставчик', 'sb-cookie-consent' ); ?></th>
-							<th><?php echo esc_html__( 'Цел', 'sb-cookie-consent' ); ?></th>
-							<th><?php echo esc_html__( 'Срок', 'sb-cookie-consent' ); ?></th>
-							<th><?php echo esc_html__( 'Script handles', 'sb-cookie-consent' ); ?></th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php
-						if ( ! $cookies ) {
-							$cookies = array(
-								array(
-									'name'           => '',
-									'category'       => 'analytics',
-									'provider'       => '',
-									'purpose'        => '',
-									'duration'       => '',
-									'script_handles' => '',
-								),
-							);
-						}
-						foreach ( $cookies as $i => $cookie ) :
-							$this->render_cookie_row( (int) $i, $cookie, $option );
-						endforeach;
-						?>
-					</tbody>
-				</table>
+				<div class="sb-cc-cookies-wrap">
+					<table class="widefat striped sb-cc-cookies" id="sb-cc-cookies">
+						<thead>
+							<tr>
+								<th class="sb-cc-col-name"><?php echo esc_html__( 'Име / маска', 'sb-cookie-consent' ); ?></th>
+								<th class="sb-cc-col-cat"><?php echo esc_html__( 'Категория', 'sb-cookie-consent' ); ?></th>
+								<th class="sb-cc-col-provider"><?php echo esc_html__( 'Доставчик', 'sb-cookie-consent' ); ?></th>
+								<th class="sb-cc-col-purpose"><?php echo esc_html__( 'Цел', 'sb-cookie-consent' ); ?></th>
+								<th class="sb-cc-col-duration"><?php echo esc_html__( 'Срок', 'sb-cookie-consent' ); ?></th>
+								<th class="sb-cc-col-handles"><?php echo esc_html__( 'Script handles', 'sb-cookie-consent' ); ?></th>
+								<th class="sb-cc-col-actions"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+							if ( ! $cookies ) {
+								$cookies = array(
+									array(
+										'name'           => '',
+										'category'       => 'analytics',
+										'provider'       => '',
+										'purpose'        => '',
+										'duration'       => '',
+										'script_handles' => '',
+									),
+								);
+							}
+							foreach ( $cookies as $i => $cookie ) :
+								$this->render_cookie_row( (int) $i, $cookie, $option );
+							endforeach;
+							?>
+						</tbody>
+					</table>
+				</div>
 				<p>
 					<button type="button" class="button" id="sb-cc-add-cookie"><?php echo esc_html__( 'Добави бисквитка', 'sb-cookie-consent' ); ?></button>
 				</p>
@@ -379,8 +381,8 @@ class SB_Cookie_Consent_Admin {
 		$i = (string) $index;
 		?>
 		<tr class="sb-cc-cookie-row">
-			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][name]" value="<?php echo esc_attr( (string) ( $cookie['name'] ?? '' ) ); ?>" class="regular-text" placeholder="_ga" /></td>
-			<td>
+			<td class="sb-cc-col-name"><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][name]" value="<?php echo esc_attr( (string) ( $cookie['name'] ?? '' ) ); ?>" placeholder="_ga" /></td>
+			<td class="sb-cc-col-cat">
 				<select name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][category]">
 					<?php
 					$cat_labels = $this->settings->default_category_labels();
@@ -390,11 +392,11 @@ class SB_Cookie_Consent_Admin {
 					<?php endforeach; ?>
 				</select>
 			</td>
-			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][provider]" value="<?php echo esc_attr( (string) ( $cookie['provider'] ?? '' ) ); ?>" class="regular-text" /></td>
-			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][purpose]" value="<?php echo esc_attr( (string) ( $cookie['purpose'] ?? '' ) ); ?>" class="large-text" /></td>
-			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][duration]" value="<?php echo esc_attr( (string) ( $cookie['duration'] ?? '' ) ); ?>" class="regular-text" /></td>
-			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][script_handles]" value="<?php echo esc_attr( (string) ( $cookie['script_handles'] ?? '' ) ); ?>" class="regular-text" placeholder="google-analytics" /></td>
-			<td><button type="button" class="button-link-delete sb-cc-remove-cookie"><?php echo esc_html__( 'Премахни', 'sb-cookie-consent' ); ?></button></td>
+			<td class="sb-cc-col-provider"><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][provider]" value="<?php echo esc_attr( (string) ( $cookie['provider'] ?? '' ) ); ?>" /></td>
+			<td class="sb-cc-col-purpose"><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][purpose]" value="<?php echo esc_attr( (string) ( $cookie['purpose'] ?? '' ) ); ?>" /></td>
+			<td class="sb-cc-col-duration"><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][duration]" value="<?php echo esc_attr( (string) ( $cookie['duration'] ?? '' ) ); ?>" /></td>
+			<td class="sb-cc-col-handles"><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][script_handles]" value="<?php echo esc_attr( (string) ( $cookie['script_handles'] ?? '' ) ); ?>" placeholder="google-analytics" /></td>
+			<td class="sb-cc-col-actions"><button type="button" class="button-link-delete sb-cc-remove-cookie"><?php echo esc_html__( 'Премахни', 'sb-cookie-consent' ); ?></button></td>
 		</tr>
 		<?php
 	}

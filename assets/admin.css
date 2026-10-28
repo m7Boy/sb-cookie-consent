@@ -6,16 +6,73 @@
 	pointer-events: none;
 }
 
-.sb-cookie-consent-admin .sb-cc-cookies {
+.sb-cookie-consent-admin .sb-cc-cookies-wrap {
 	margin-top: 0.75rem;
+	max-width: 100%;
+	max-height: min(420px, 55vh);
+	overflow: auto;
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	box-sizing: border-box;
 }
 
-.sb-cookie-consent-admin .sb-cc-cookies input.large-text {
+.sb-cookie-consent-admin .sb-cc-cookies {
+	margin: 0;
+	border: 0;
 	width: 100%;
-	max-width: 220px;
+	min-width: 860px;
+	border-collapse: separate;
+	border-spacing: 0;
+	table-layout: fixed;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies thead th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background: #f0f0f1;
+	box-shadow: inset 0 -1px 0 #c3c4c7;
 }
 
 .sb-cookie-consent-admin .sb-cc-cookies th,
 .sb-cookie-consent-admin .sb-cc-cookies td {
 	vertical-align: middle;
+	padding: 8px 10px;
+	word-break: break-word;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-name {
+	width: 12%;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-cat {
+	width: 12%;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-provider {
+	width: 12%;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-purpose {
+	width: 28%;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-duration {
+	width: 12%;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-handles {
+	width: 16%;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies .sb-cc-col-actions {
+	width: 8%;
+	white-space: nowrap;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies input[type="text"],
+.sb-cookie-consent-admin .sb-cc-cookies select {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
 }
