@@ -36,7 +36,19 @@ class SB_Cookie_Consent_Consent {
 	 * Whether any consent choice was stored.
 	 */
 	public static function has_choice(): bool {
-		return null !== self::raw();
+		$raw = self::raw();
+		if ( null === $raw ) {
+			return false;
+		}
+
+		// Legacy or valid JSON both count as a stored choice.
+		if ( in_array( $raw, array( 'accepted', 'declined' ), true ) ) {
+			return true;
+		}
+
+		$decoded = json_decode( $raw, true );
+
+		return is_array( $decoded );
 	}
 
 	/**
@@ -72,10 +84,28 @@ class SB_Cookie_Consent_Consent {
 			return null;
 		}
 
-		$value = wp_unslash( (string) $_COOKIE[ self::COOKIE ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$value = rawurldecode( $value );
+		$value = trim( wp_unslash( (string) $_COOKIE[ self::COOKIE ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( '' === $value ) {
+			return null;
+		}
+
+		// PHP usually decodes cookies once; retry if value still looks encoded.
+		if ( ! self::looks_like_consent( $value ) ) {
+			$decoded = rawurldecode( $value );
+			if ( self::looks_like_consent( $decoded ) ) {
+				$value = $decoded;
+			}
+		}
 
 		return '' === $value ? null : $value;
+	}
+
+	private static function looks_like_consent( string $value ): bool {
+		if ( in_array( $value, array( 'accepted', 'declined' ), true ) ) {
+			return true;
+		}
+
+		return str_starts_with( $value, '{' ) && null !== json_decode( $value, true );
 	}
 
 	/**
@@ -84,6 +114,7 @@ class SB_Cookie_Consent_Consent {
 	 */
 	public static function normalize( string $raw ): array {
 		$out = self::defaults();
+		$raw = trim( $raw );
 
 		// Legacy simple values from 1.0.x.
 		if ( 'accepted' === $raw ) {
@@ -97,6 +128,9 @@ class SB_Cookie_Consent_Consent {
 		}
 
 		$decoded = json_decode( $raw, true );
+		if ( ! is_array( $decoded ) ) {
+			$decoded = json_decode( rawurldecode( $raw ), true );
+		}
 		if ( ! is_array( $decoded ) ) {
 			return $out;
 		}

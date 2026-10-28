@@ -3,7 +3,7 @@
  * Plugin Name:       SB Cookie Consent
  * Plugin URI:        https://softwarebrewery.net
  * Description:       GDPR-oriented cookie consent with categories, cookie inventory, policy shortcode, reopen control, and script gating. Developed by Software Brewery.
- * Version:           1.1.2
+ * Version:           1.1.3
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Software Brewery
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'SB_COOKIE_CONSENT_FILE', __FILE__ );
-define( 'SB_COOKIE_CONSENT_VERSION', '1.1.2' );
+define( 'SB_COOKIE_CONSENT_VERSION', '1.1.3' );
 define( 'SB_COOKIE_CONSENT_AUTHOR_URL', 'https://softwarebrewery.net' );
 
 require_once __DIR__ . '/includes/class-settings.php';

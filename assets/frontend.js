@@ -4,37 +4,57 @@
 	var cfg = window.sbCookieConsent || {};
 	var cookieName = cfg.cookieName || 'sb_cookie_consent';
 	var days = parseInt(cfg.days, 10) || 365;
+	var cookiePath = cfg.cookiePath || '/';
+	var cookieDomain = cfg.cookieDomain || '';
 	var purgeMap = cfg.purge || {};
 
 	function readCookie(name) {
 		var match = document.cookie.match(
 			new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)')
 		);
-		return match ? decodeURIComponent(match[1]) : '';
+		if (!match) {
+			return '';
+		}
+		try {
+			return decodeURIComponent(match[1]);
+		} catch (e) {
+			return match[1];
+		}
 	}
 
 	function writeCookie(name, value, expireDays) {
 		var maxAge = Math.max(1, expireDays) * 24 * 60 * 60;
 		var secure = window.location.protocol === 'https:' ? '; Secure' : '';
+		var domain = cookieDomain ? '; Domain=' + cookieDomain : '';
 		document.cookie =
 			name +
 			'=' +
 			encodeURIComponent(value) +
-			'; Path=/; Max-Age=' +
+			'; Path=' +
+			cookiePath +
+			'; Max-Age=' +
 			maxAge +
 			'; SameSite=Lax' +
+			domain +
 			secure;
 	}
 
 	function expireCookie(name) {
 		var host = window.location.hostname;
-		var parts = [
-			name + '=; Path=/; Max-Age=0; SameSite=Lax',
-			name + '=; Path=/; Max-Age=0; Domain=' + host + '; SameSite=Lax',
-			name + '=; Path=/; Max-Age=0; Domain=.' + host + '; SameSite=Lax',
-		];
-		parts.forEach(function (c) {
-			document.cookie = c;
+		var paths = [cookiePath || '/', '/'];
+		var domains = ['', host, '.' + host];
+		if (cookieDomain) {
+			domains.push(cookieDomain);
+		}
+		paths.forEach(function (path) {
+			domains.forEach(function (domain) {
+				document.cookie =
+					name +
+					'=; Path=' +
+					path +
+					'; Max-Age=0; SameSite=Lax' +
+					(domain ? '; Domain=' + domain : '');
+			});
 		});
 	}
 
@@ -121,6 +141,46 @@
 		}
 	}
 
+	function parseConsent(raw) {
+		if (!raw) {
+			return null;
+		}
+		raw = String(raw).replace(/^\uFEFF/, '').trim();
+		if (raw === 'accepted') {
+			return { necessary: true, preferences: true, analytics: true, marketing: true };
+		}
+		if (raw === 'declined') {
+			return { necessary: true, preferences: false, analytics: false, marketing: false };
+		}
+		try {
+			var parsed = JSON.parse(raw);
+			if (parsed && typeof parsed === 'object') {
+				return {
+					necessary: true,
+					preferences: !!parsed.preferences,
+					analytics: !!parsed.analytics,
+					marketing: !!parsed.marketing,
+				};
+			}
+		} catch (e) {
+			/* try once more after decode */
+		}
+		try {
+			var decoded = JSON.parse(decodeURIComponent(raw));
+			if (decoded && typeof decoded === 'object') {
+				return {
+					necessary: true,
+					preferences: !!decoded.preferences,
+					analytics: !!decoded.analytics,
+					marketing: !!decoded.marketing,
+				};
+			}
+		} catch (e2) {
+			/* ignore */
+		}
+		return null;
+	}
+
 	function collectFromUi(banner) {
 		var categories = {
 			necessary: true,
@@ -159,6 +219,11 @@
 		applyPurge(categories);
 		activateScripts(categories);
 		emit(categories);
+	}
+
+	function reloadPage() {
+		// Full reload so PHP blocker + scripts match the new consent cookie.
+		window.location.reload();
 	}
 
 	function init() {
@@ -210,24 +275,16 @@
 			}
 		}
 
-		var existing = readCookie(cookieName);
+		var existing = parseConsent(readCookie(cookieName));
 		if (existing) {
-			var parsed = null;
-			try {
-				parsed = JSON.parse(existing);
-			} catch (e) {
-				if (existing === 'accepted') {
-					parsed = { necessary: true, preferences: true, analytics: true, marketing: true };
-				} else if (existing === 'declined') {
-					parsed = { necessary: true, preferences: false, analytics: false, marketing: false };
-				}
-			}
-			if (parsed) {
-				parsed.necessary = true;
-				setUi(banner, parsed);
-				syncBootstrap(parsed);
-				activateScripts(parsed);
-			}
+			setUi(banner, existing);
+			syncBootstrap(existing);
+			activateScripts(existing);
+			hideBanner();
+		} else if (cfg.hasChoice && cfg.categories) {
+			// Server already knew about consent (e.g. cached HTML mismatch).
+			setUi(banner, cfg.categories);
+			hideBanner();
 		}
 
 		document.addEventListener('click', function (event) {
@@ -281,6 +338,7 @@
 
 			save(categories);
 			hideBanner();
+			window.setTimeout(reloadPage, 50);
 		});
 	}
 

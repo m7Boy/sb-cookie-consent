@@ -73,12 +73,14 @@ class SB_Cookie_Consent_Frontend {
 			'sb-cookie-consent',
 			'sbCookieConsent',
 			array(
-				'cookieName' => SB_Cookie_Consent_Consent::COOKIE,
-				'days'       => (int) $settings['cookie_days'],
-				'categories' => SB_Cookie_Consent_Consent::categories(),
-				'hasChoice'  => SB_Cookie_Consent_Consent::has_choice(),
-				'purge'      => $purge,
-				'i18n'       => array(
+				'cookieName'   => SB_Cookie_Consent_Consent::COOKIE,
+				'days'         => (int) $settings['cookie_days'],
+				'cookiePath'   => defined( 'COOKIEPATH' ) && COOKIEPATH ? COOKIEPATH : '/',
+				'cookieDomain' => defined( 'COOKIE_DOMAIN' ) && COOKIE_DOMAIN ? COOKIE_DOMAIN : '',
+				'categories'   => SB_Cookie_Consent_Consent::categories(),
+				'hasChoice'    => SB_Cookie_Consent_Consent::has_choice(),
+				'purge'        => $purge,
+				'i18n'         => array(
 					'empty' => __( 'Няма регистрирани бисквитки в тази категория.', 'sb-cookie-consent' ),
 				),
 			)
@@ -99,7 +101,7 @@ class SB_Cookie_Consent_Frontend {
 			'categories' => $cats,
 		);
 		printf(
-			'<script id="sb-cookie-consent-bootstrap">window.sbCC=%s;window.sbCC.has=function(c){c=String(c||"");if(c==="necessary")return!0;return!!(window.sbCC.categories&&window.sbCC.categories[c]);};</script>' . "\n",
+			'<script id="sb-cookie-consent-bootstrap">window.sbCC=%1$s;window.sbCC.has=function(c){c=String(c||"");if(c==="necessary")return!0;return!!(window.sbCC.categories&&window.sbCC.categories[c]);};(function(){try{var m=document.cookie.match(/(?:^|; )sb_cookie_consent=([^;]*)/);if(!m)return;var raw=decodeURIComponent(m[1]);var ok=raw==="accepted"||raw==="declined"||(raw.charAt(0)==="{"&&raw.indexOf("necessary")!==-1);if(!ok)return;window.sbCC.hasChoice=!0;document.addEventListener("DOMContentLoaded",function(){var b=document.getElementById("sb-cookie-consent");var r=document.getElementById("sb-cookie-consent-reopen");if(b)b.setAttribute("hidden","hidden");if(r)r.removeAttribute("hidden");});}catch(e){}})();</script>' . "\n",
 			wp_json_encode( $data )
 		);
 	}
