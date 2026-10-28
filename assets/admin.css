@@ -1,0 +1,7 @@
+.sb-cookie-consent-admin .sb-cc-color-row.is-disabled {
+	opacity: 0.55;
+}
+
+.sb-cookie-consent-admin .sb-cc-color-row.is-disabled .wp-picker-container {
+	pointer-events: none;
+}
