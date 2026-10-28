@@ -18,6 +18,8 @@ class SB_Cookie_Consent_Settings {
 
 	public const OPTION = 'sb_cookie_consent_settings';
 
+	public const CATEGORIES = array( 'necessary', 'preferences', 'analytics', 'marketing' );
+
 	/**
 	 * Default values. Colors prefer theme global styles when available.
 	 *
@@ -27,22 +29,96 @@ class SB_Cookie_Consent_Settings {
 		$theme = $this->theme_colors();
 
 		return array(
-			'enabled'           => true,
-			'message'           => __( 'Този сайт използва бисквитки, за да подобри вашето преживяване. С продължаване се съгласявате с използването им.', 'sb-cookie-consent' ),
-			'accept_label'      => __( 'Съгласявам се', 'sb-cookie-consent' ),
-			'decline_label'     => __( 'Отказвам', 'sb-cookie-consent' ),
-			'show_decline'      => true,
-			'privacy_url'       => '',
-			'privacy_label'     => __( 'Политика за поверителност', 'sb-cookie-consent' ),
-			'position'          => 'bottom',
-			'cookie_days'       => 365,
-			'bg_color'          => $theme['bg'],
-			'text_color'        => $theme['text'],
-			'button_bg'         => $theme['primary'],
-			'button_text'       => $theme['button_text'],
-			'decline_bg'        => 'transparent',
-			'decline_text'      => $theme['text'],
-			'use_theme_colors'  => true,
+			'enabled'              => true,
+			'message'              => __( 'Използваме бисквитки, за да осигурим работата на сайта и (с ваше съгласие) за предпочитания, статистика и маркетинг. Можете да приемете всички, да откажете незадължителните или да изберете по категории.', 'sb-cookie-consent' ),
+			'accept_label'         => __( 'Приемам всички', 'sb-cookie-consent' ),
+			'decline_label'        => __( 'Само необходими', 'sb-cookie-consent' ),
+			'settings_label'       => __( 'Настройки', 'sb-cookie-consent' ),
+			'save_label'           => __( 'Запази избора', 'sb-cookie-consent' ),
+			'show_decline'         => true,
+			'cookie_policy_url'    => '',
+			'cookie_policy_label'  => __( 'Политика за бисквитки', 'sb-cookie-consent' ),
+			'show_policy_link'     => true,
+			'show_reopen'          => true,
+			'reopen_label'         => __( 'Настройки за бисквитки', 'sb-cookie-consent' ),
+			'position'             => 'bottom',
+			'cookie_days'          => 365,
+			'bg_color'             => $theme['bg'],
+			'text_color'           => $theme['text'],
+			'button_bg'            => $theme['primary'],
+			'button_text'          => $theme['button_text'],
+			'decline_bg'           => 'transparent',
+			'decline_text'         => $theme['text'],
+			'use_theme_colors'     => true,
+			'category_labels'      => $this->default_category_labels(),
+			'category_descriptions'=> $this->default_category_descriptions(),
+			'cookies'              => $this->default_cookies(),
+		);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function default_category_labels(): array {
+		return array(
+			'necessary'   => __( 'Необходими', 'sb-cookie-consent' ),
+			'preferences' => __( 'Предпочитания', 'sb-cookie-consent' ),
+			'analytics'   => __( 'Статистика', 'sb-cookie-consent' ),
+			'marketing'   => __( 'Маркетинг', 'sb-cookie-consent' ),
+		);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function default_category_descriptions(): array {
+		return array(
+			'necessary'   => __( 'Нужни за основната работа на сайта и запомняне на вашия избор за бисквитки. Не могат да се изключат.', 'sb-cookie-consent' ),
+			'preferences' => __( 'Запазват настройки като език или регион.', 'sb-cookie-consent' ),
+			'analytics'   => __( 'Помагат да разберем как се използва сайтът (анонимна или агрегирана статистика).', 'sb-cookie-consent' ),
+			'marketing'   => __( 'Използват се за реклама и проследяване между сайтове.', 'sb-cookie-consent' ),
+		);
+	}
+
+	/**
+	 * Starter inventory: WordPress / plugin essentials; other categories empty on purpose.
+	 *
+	 * @return array<int, array<string, string>>
+	 */
+	public function default_cookies(): array {
+		return array(
+			array(
+				'name'         => 'sb_cookie_consent',
+				'category'     => 'necessary',
+				'provider'     => 'SB Cookie Consent',
+				'purpose'      => __( 'Запазва избора ви за категории бисквитки.', 'sb-cookie-consent' ),
+				'duration'     => __( 'До 365 дни (според настройката)', 'sb-cookie-consent' ),
+				'script_handles' => '',
+			),
+			array(
+				'name'         => 'wordpress_test_cookie',
+				'category'     => 'necessary',
+				'provider'     => 'WordPress',
+				'purpose'      => __( 'Проверява дали браузърът приема бисквитки.', 'sb-cookie-consent' ),
+				'duration'     => __( 'Сесия', 'sb-cookie-consent' ),
+				'script_handles' => '',
+			),
+			array(
+				'name'         => 'wordpress_logged_in_*',
+				'category'     => 'necessary',
+				'provider'     => 'WordPress',
+				'purpose'      => __( 'Поддържа влизането в администрацията / акаунта.', 'sb-cookie-consent' ),
+				'duration'     => __( 'Сесия / според WordPress', 'sb-cookie-consent' ),
+				'script_handles' => '',
+			),
+			array(
+				'name'         => 'wp-settings-*',
+				'category'     => 'necessary',
+				'provider'     => 'WordPress',
+				'purpose'      => __( 'Запазва настройки на интерфейса за влезли потребители.', 'sb-cookie-consent' ),
+				'duration'     => __( '1 година', 'sb-cookie-consent' ),
+				'script_handles' => '',
+			),
 		);
 	}
 
@@ -80,7 +156,6 @@ class SB_Cookie_Consent_Settings {
 			}
 		}
 
-		// Banner uses a dark strip by default: theme contrast/foreground as bg, light text.
 		$bg = $this->pick_color(
 			$colors,
 			array( 'contrast', 'foreground', 'black', 'dark-gray', 'primary' ),
@@ -95,7 +170,6 @@ class SB_Cookie_Consent_Settings {
 			$fallback['primary']
 		);
 
-		// Avoid unreadable button when primary matches the banner background.
 		if ( strtolower( $primary ) === strtolower( $bg ) ) {
 			$primary = $fallback['primary'];
 		}
@@ -133,9 +207,6 @@ class SB_Cookie_Consent_Settings {
 		return $default;
 	}
 
-	/**
-	 * Normalize CSS color to a hex string when possible.
-	 */
 	private function normalize_color( string $color, string $fallback ): string {
 		$color = trim( $color );
 
@@ -163,7 +234,6 @@ class SB_Cookie_Consent_Settings {
 		$g = hexdec( substr( $hex, 2, 2 ) );
 		$b = hexdec( substr( $hex, 4, 2 ) );
 
-		// Relative luminance threshold.
 		return ( ( $r * 299 ) + ( $g * 587 ) + ( $b * 114 ) ) / 1000 >= 160;
 	}
 
@@ -178,15 +248,33 @@ class SB_Cookie_Consent_Settings {
 			$saved = array();
 		}
 
-		$settings = array_merge( $this->defaults(), $saved );
+		// Migrate old privacy fields once.
+		if ( empty( $saved['cookie_policy_url'] ) && ! empty( $saved['privacy_url'] ) ) {
+			$saved['cookie_policy_url'] = $saved['privacy_url'];
+		}
+		if ( empty( $saved['cookie_policy_label'] ) && ! empty( $saved['privacy_label'] ) ) {
+			$saved['cookie_policy_label'] = $saved['privacy_label'];
+		}
+
+		$defaults = $this->defaults();
+		$settings = array_merge( $defaults, $saved );
+
+		$settings['category_labels']       = array_merge( $defaults['category_labels'], is_array( $saved['category_labels'] ?? null ) ? $saved['category_labels'] : array() );
+		$settings['category_descriptions'] = array_merge( $defaults['category_descriptions'], is_array( $saved['category_descriptions'] ?? null ) ? $saved['category_descriptions'] : array() );
+
+		if ( ! isset( $saved['cookies'] ) || ! is_array( $saved['cookies'] ) ) {
+			$settings['cookies'] = $defaults['cookies'];
+		} else {
+			$settings['cookies'] = $saved['cookies'];
+		}
 
 		if ( ! empty( $settings['use_theme_colors'] ) ) {
-			$theme                     = $this->theme_colors();
-			$settings['bg_color']      = $theme['bg'];
-			$settings['text_color']    = $theme['text'];
-			$settings['button_bg']     = $theme['primary'];
-			$settings['button_text']   = $theme['button_text'];
-			$settings['decline_text']  = $theme['text'];
+			$theme                    = $this->theme_colors();
+			$settings['bg_color']     = $theme['bg'];
+			$settings['text_color']   = $theme['text'];
+			$settings['button_bg']    = $theme['primary'];
+			$settings['button_text']  = $theme['button_text'];
+			$settings['decline_text'] = $theme['text'];
 		}
 
 		return $settings;
@@ -194,6 +282,88 @@ class SB_Cookie_Consent_Settings {
 
 	public function enabled(): bool {
 		return ! empty( $this->all()['enabled'] );
+	}
+
+	/**
+	 * Cookies grouped by category (always includes every category key).
+	 *
+	 * @return array<string, array<int, array<string, string>>>
+	 */
+	public function cookies_by_category(): array {
+		$grouped = array();
+		foreach ( self::CATEGORIES as $category ) {
+			$grouped[ $category ] = array();
+		}
+
+		foreach ( $this->all()['cookies'] as $cookie ) {
+			if ( ! is_array( $cookie ) ) {
+				continue;
+			}
+			$category = isset( $cookie['category'] ) ? sanitize_key( (string) $cookie['category'] ) : 'necessary';
+			if ( ! isset( $grouped[ $category ] ) ) {
+				$category = 'necessary';
+			}
+			$grouped[ $category ][] = $cookie;
+		}
+
+		return $grouped;
+	}
+
+	/**
+	 * Map of WP script handle => category for gating.
+	 *
+	 * @return array<string, string>
+	 */
+	public function gated_handles(): array {
+		$map = array();
+
+		foreach ( $this->all()['cookies'] as $cookie ) {
+			if ( ! is_array( $cookie ) || empty( $cookie['script_handles'] ) ) {
+				continue;
+			}
+			$category = isset( $cookie['category'] ) ? sanitize_key( (string) $cookie['category'] ) : '';
+			if ( ! in_array( $category, self::CATEGORIES, true ) || 'necessary' === $category ) {
+				continue;
+			}
+			$handles = preg_split( '/[\s,]+/', (string) $cookie['script_handles'] ) ?: array();
+			foreach ( $handles as $handle ) {
+				$handle = sanitize_key( $handle );
+				if ( '' !== $handle ) {
+					$map[ $handle ] = $category;
+				}
+			}
+		}
+
+		/**
+		 * Filters script handles gated by cookie category.
+		 *
+		 * @param array<string, string> $map Handle => category.
+		 */
+		return (array) apply_filters( 'sb_cookie_consent_gated_handles', $map );
+	}
+
+	/**
+	 * Cookie name patterns to remove when a category is off.
+	 *
+	 * @param string $category Category slug.
+	 * @return string[]
+	 */
+	public function cookie_names_for_category( string $category ): array {
+		$names = array();
+		foreach ( $this->all()['cookies'] as $cookie ) {
+			if ( ! is_array( $cookie ) ) {
+				continue;
+			}
+			if ( ( $cookie['category'] ?? '' ) !== $category ) {
+				continue;
+			}
+			$name = isset( $cookie['name'] ) ? trim( (string) $cookie['name'] ) : '';
+			if ( '' !== $name && 'sb_cookie_consent' !== $name ) {
+				$names[] = $name;
+			}
+		}
+
+		return $names;
 	}
 
 	/**
@@ -215,31 +385,86 @@ class SB_Cookie_Consent_Settings {
 		}
 
 		$days = isset( $input['cookie_days'] ) ? absint( $input['cookie_days'] ) : 365;
-		if ( $days < 1 ) {
-			$days = 1;
+		$days = max( 1, min( 3650, $days ) );
+
+		$labels = $defaults['category_labels'];
+		$descs  = $defaults['category_descriptions'];
+		if ( isset( $input['category_labels'] ) && is_array( $input['category_labels'] ) ) {
+			foreach ( self::CATEGORIES as $cat ) {
+				if ( isset( $input['category_labels'][ $cat ] ) ) {
+					$labels[ $cat ] = sanitize_text_field( (string) $input['category_labels'][ $cat ] );
+				}
+			}
 		}
-		if ( $days > 3650 ) {
-			$days = 3650;
+		if ( isset( $input['category_descriptions'] ) && is_array( $input['category_descriptions'] ) ) {
+			foreach ( self::CATEGORIES as $cat ) {
+				if ( isset( $input['category_descriptions'][ $cat ] ) ) {
+					$descs[ $cat ] = sanitize_textarea_field( (string) $input['category_descriptions'][ $cat ] );
+				}
+			}
 		}
 
 		return array(
-			'enabled'          => ! empty( $input['enabled'] ),
-			'message'          => isset( $input['message'] ) ? sanitize_textarea_field( (string) $input['message'] ) : $defaults['message'],
-			'accept_label'     => isset( $input['accept_label'] ) ? sanitize_text_field( (string) $input['accept_label'] ) : $defaults['accept_label'],
-			'decline_label'    => isset( $input['decline_label'] ) ? sanitize_text_field( (string) $input['decline_label'] ) : $defaults['decline_label'],
-			'show_decline'     => ! empty( $input['show_decline'] ),
-			'privacy_url'      => isset( $input['privacy_url'] ) ? esc_url_raw( (string) $input['privacy_url'] ) : '',
-			'privacy_label'    => isset( $input['privacy_label'] ) ? sanitize_text_field( (string) $input['privacy_label'] ) : $defaults['privacy_label'],
-			'position'         => $position,
-			'cookie_days'      => $days,
-			'bg_color'         => $this->sanitize_color( $input['bg_color'] ?? '', $defaults['bg_color'] ),
-			'text_color'       => $this->sanitize_color( $input['text_color'] ?? '', $defaults['text_color'] ),
-			'button_bg'        => $this->sanitize_color( $input['button_bg'] ?? '', $defaults['button_bg'] ),
-			'button_text'      => $this->sanitize_color( $input['button_text'] ?? '', $defaults['button_text'] ),
-			'decline_bg'       => $this->sanitize_color( $input['decline_bg'] ?? '', 'transparent', true ),
-			'decline_text'     => $this->sanitize_color( $input['decline_text'] ?? '', $defaults['decline_text'] ),
-			'use_theme_colors' => ! empty( $input['use_theme_colors'] ),
+			'enabled'               => ! empty( $input['enabled'] ),
+			'message'               => isset( $input['message'] ) ? sanitize_textarea_field( (string) $input['message'] ) : $defaults['message'],
+			'accept_label'          => isset( $input['accept_label'] ) ? sanitize_text_field( (string) $input['accept_label'] ) : $defaults['accept_label'],
+			'decline_label'         => isset( $input['decline_label'] ) ? sanitize_text_field( (string) $input['decline_label'] ) : $defaults['decline_label'],
+			'settings_label'        => isset( $input['settings_label'] ) ? sanitize_text_field( (string) $input['settings_label'] ) : $defaults['settings_label'],
+			'save_label'            => isset( $input['save_label'] ) ? sanitize_text_field( (string) $input['save_label'] ) : $defaults['save_label'],
+			'show_decline'          => ! empty( $input['show_decline'] ),
+			'cookie_policy_url'     => isset( $input['cookie_policy_url'] ) ? esc_url_raw( (string) $input['cookie_policy_url'] ) : '',
+			'cookie_policy_label'   => isset( $input['cookie_policy_label'] ) ? sanitize_text_field( (string) $input['cookie_policy_label'] ) : $defaults['cookie_policy_label'],
+			'show_policy_link'      => ! empty( $input['show_policy_link'] ),
+			'show_reopen'           => ! empty( $input['show_reopen'] ),
+			'reopen_label'          => isset( $input['reopen_label'] ) ? sanitize_text_field( (string) $input['reopen_label'] ) : $defaults['reopen_label'],
+			'position'              => $position,
+			'cookie_days'           => $days,
+			'bg_color'              => $this->sanitize_color( $input['bg_color'] ?? '', $defaults['bg_color'] ),
+			'text_color'            => $this->sanitize_color( $input['text_color'] ?? '', $defaults['text_color'] ),
+			'button_bg'             => $this->sanitize_color( $input['button_bg'] ?? '', $defaults['button_bg'] ),
+			'button_text'           => $this->sanitize_color( $input['button_text'] ?? '', $defaults['button_text'] ),
+			'decline_bg'            => $this->sanitize_color( $input['decline_bg'] ?? '', 'transparent', true ),
+			'decline_text'          => $this->sanitize_color( $input['decline_text'] ?? '', $defaults['decline_text'] ),
+			'use_theme_colors'      => ! empty( $input['use_theme_colors'] ),
+			'category_labels'       => $labels,
+			'category_descriptions' => $descs,
+			'cookies'               => $this->sanitize_cookies( $input['cookies'] ?? array() ),
 		);
+	}
+
+	/**
+	 * @param mixed $rows Raw cookie rows.
+	 * @return array<int, array<string, string>>
+	 */
+	private function sanitize_cookies( $rows ): array {
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		$clean = array();
+		foreach ( $rows as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$name = isset( $row['name'] ) ? sanitize_text_field( (string) $row['name'] ) : '';
+			if ( '' === $name ) {
+				continue;
+			}
+			$category = isset( $row['category'] ) ? sanitize_key( (string) $row['category'] ) : 'necessary';
+			if ( ! in_array( $category, self::CATEGORIES, true ) ) {
+				$category = 'necessary';
+			}
+			$clean[] = array(
+				'name'           => $name,
+				'category'       => $category,
+				'provider'       => isset( $row['provider'] ) ? sanitize_text_field( (string) $row['provider'] ) : '',
+				'purpose'        => isset( $row['purpose'] ) ? sanitize_text_field( (string) $row['purpose'] ) : '',
+				'duration'       => isset( $row['duration'] ) ? sanitize_text_field( (string) $row['duration'] ) : '',
+				'script_handles' => isset( $row['script_handles'] ) ? sanitize_text_field( (string) $row['script_handles'] ) : '',
+			);
+		}
+
+		return $clean;
 	}
 
 	/**

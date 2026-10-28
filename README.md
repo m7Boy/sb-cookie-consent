@@ -1,6 +1,6 @@
 # SB Cookie Consent
 
-A WordPress plugin that shows a cookie consent banner with admin-managed text, buttons, and colors. Theme palette colors are used by default. Developed by [Software Brewery](https://softwarebrewery.net).
+WordPress cookie consent with categories, a cookie inventory, a cookie-policy shortcode, a permanent policy link, a reopen control, and real script/cookie gating. Developed by [Software Brewery](https://softwarebrewery.net).
 
 ## Requirements
 
@@ -9,69 +9,51 @@ A WordPress plugin that shows a cookie consent banner with admin-managed text, b
 
 ## Features
 
-- Consent banner on the front end (“Съгласявам се” / optional decline)
-- Editable message, button labels, privacy policy link, position, and cookie lifetime
-- Colors from the active theme (`theme.json` / global styles) by default
-- Manual color overrides with the WordPress color picker
-- Choice stored in a first-party cookie (`sb_cookie_consent`)
-- `sbCookieConsent` custom event for other scripts after accept/decline
-- Settings under **Settings → SB Cookie Consent**
-- Clean uninstall (removes plugin options)
+- Banner with **Necessary / Preferences / Analytics / Marketing**
+- Per-category toggles and cookie lists (empty categories still shown)
+- **Accept all**, **Necessary only**, **Save choice**
+- Floating icon to change consent after accept/decline
+- Permanent footer link to the **cookie policy** (not privacy)
+- Shortcode `[sb_cookie_policy]` for the full inventory on a policy page
+- Admin cookie registry (name/mask, provider, purpose, duration, WP script handles)
+- Blocks mapped scripts until the category is allowed (`type="text/plain"` → activated on consent)
+- Deletes matching first-party cookies when a category is turned off
+- Theme colors by default; manual overrides via color picker
+- Helpers: `sb_cookie_consent_allows( 'analytics' )`, `window.sbCC.has('analytics')`
 
-## Installation
+## Setup
 
-1. Copy the `sb-cookie-consent` folder into `wp-content/plugins/`.
-2. Activate **SB Cookie Consent** from Plugins.
-3. Open **Settings → SB Cookie Consent** and adjust the message, buttons, and colors.
+1. Activate **SB Cookie Consent**.
+2. Create a page (e.g. “Политика за бисквитки”) and add `[sb_cookie_policy]`.
+3. Open **Settings → SB Cookie Consent**, set the cookie policy URL, and fill the cookie registry.
+4. For analytics/marketing scripts registered in WordPress, put their **script handles** on the matching cookie row so they stay blocked without consent.
 
-## Usage
-
-Visitors without a stored choice see the banner. Accept or decline sets `sb_cookie_consent` to `accepted` or `declined` and hides the banner for the configured number of days.
-
-Listen for the choice in other scripts:
+## Front-end API
 
 ```js
 document.addEventListener('sbCookieConsent', function (event) {
-  console.log(event.detail.status); // 'accepted' | 'declined'
+  console.log(event.detail.categories);
 });
-```
 
-Filter theme-derived colors:
+if (window.sbCC && window.sbCC.has('analytics')) {
+  // load analytics
+}
+```
 
 ```php
-add_filter( 'sb_cookie_consent_theme_colors', function ( $colors ) {
-	$colors['primary'] = '#0a7';
-	return $colors;
-} );
+if ( sb_cookie_consent_allows( 'marketing' ) ) {
+	// output marketing tag
+}
 ```
 
-## Security
+## Filters
 
-- Capability checks on the settings screen
-- Settings API with sanitized input
-- Escaped output on admin and front end
-- Cookie uses `SameSite=Lax` (and `Secure` on HTTPS)
-
-## Structure
-
-```
-sb-cookie-consent/
-├── sb-cookie-consent.php
-├── uninstall.php
-├── includes/
-│   ├── class-settings.php
-│   ├── class-admin.php
-│   └── class-frontend.php
-└── assets/
-    ├── frontend.css
-    ├── frontend.js
-    ├── admin.css
-    └── admin.js
-```
+- `sb_cookie_consent_theme_colors` — default banner colors from the theme
+- `sb_cookie_consent_gated_handles` — map of `script_handle => category`
 
 ## Version
 
-1.0.1 — Banner renders before footer scripts so it is visible without relying on JS to unhide it.
+1.1.0 — Categories, inventory, cookie policy shortcode, permanent policy link, reopen icon, script gating and cookie purge.
 
 ## License
 

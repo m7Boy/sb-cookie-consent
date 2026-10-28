@@ -5,3 +5,17 @@
 .sb-cookie-consent-admin .sb-cc-color-row.is-disabled .wp-picker-container {
 	pointer-events: none;
 }
+
+.sb-cookie-consent-admin .sb-cc-cookies {
+	margin-top: 0.75rem;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies input.large-text {
+	width: 100%;
+	max-width: 220px;
+}
+
+.sb-cookie-consent-admin .sb-cc-cookies th,
+.sb-cookie-consent-admin .sb-cc-cookies td {
+	vertical-align: middle;
+}

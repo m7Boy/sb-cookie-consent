@@ -76,6 +76,19 @@ class SB_Cookie_Consent_Admin {
 			SB_COOKIE_CONSENT_VERSION,
 			true
 		);
+
+		wp_localize_script(
+			'sb-cookie-consent-admin',
+			'sbCookieConsentAdmin',
+			array(
+				'categories' => array(
+					'necessary'   => __( 'Необходими', 'sb-cookie-consent' ),
+					'preferences' => __( 'Предпочитания', 'sb-cookie-consent' ),
+					'analytics'   => __( 'Статистика', 'sb-cookie-consent' ),
+					'marketing'   => __( 'Маркетинг', 'sb-cookie-consent' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -102,10 +115,11 @@ class SB_Cookie_Consent_Admin {
 		$settings = $this->settings->all();
 		$option   = SB_Cookie_Consent_Settings::OPTION;
 		$theme    = $this->settings->theme_colors();
+		$cookies  = is_array( $settings['cookies'] ) ? $settings['cookies'] : array();
 		?>
 		<div class="wrap sb-cookie-consent-admin">
 			<h1><?php echo esc_html__( 'SB Cookie Consent', 'sb-cookie-consent' ); ?></h1>
-			<p><?php echo esc_html__( 'Показва банер за съгласие с бисквитки. Основните текстове, позиция и цветове се управляват оттук.', 'sb-cookie-consent' ); ?></p>
+			<p><?php echo esc_html__( 'Банер с категории, реален контрол на скриптове/бисквитки, политика за бисквитки и бутон за промяна на избора.', 'sb-cookie-consent' ); ?></p>
 			<p>
 				<?php
 				echo wp_kses(
@@ -140,80 +154,77 @@ class SB_Cookie_Consent_Admin {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">
-							<label for="sb-cc-message"><?php echo esc_html__( 'Съобщение', 'sb-cookie-consent' ); ?></label>
-						</th>
+						<th scope="row"><label for="sb-cc-message"><?php echo esc_html__( 'Съобщение', 'sb-cookie-consent' ); ?></label></th>
 						<td>
-							<textarea
-								id="sb-cc-message"
-								name="<?php echo esc_attr( $option ); ?>[message]"
-								rows="3"
-								class="large-text"
-							><?php echo esc_textarea( (string) $settings['message'] ); ?></textarea>
+							<textarea id="sb-cc-message" name="<?php echo esc_attr( $option ); ?>[message]" rows="3" class="large-text"><?php echo esc_textarea( (string) $settings['message'] ); ?></textarea>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">
-							<label for="sb-cc-accept"><?php echo esc_html__( 'Бутон „Съгласявам се“', 'sb-cookie-consent' ); ?></label>
-						</th>
+						<th scope="row"><label for="sb-cc-accept"><?php echo esc_html__( 'Бутон „Приемам всички“', 'sb-cookie-consent' ); ?></label></th>
 						<td>
-							<input
-								id="sb-cc-accept"
-								name="<?php echo esc_attr( $option ); ?>[accept_label]"
-								type="text"
-								class="regular-text"
-								value="<?php echo esc_attr( (string) $settings['accept_label'] ); ?>"
-							/>
+							<input id="sb-cc-accept" name="<?php echo esc_attr( $option ); ?>[accept_label]" type="text" class="regular-text" value="<?php echo esc_attr( (string) $settings['accept_label'] ); ?>" />
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php echo esc_html__( 'Отказ', 'sb-cookie-consent' ); ?></th>
+						<th scope="row"><label for="sb-cc-settings"><?php echo esc_html__( 'Бутон „Настройки“', 'sb-cookie-consent' ); ?></label></th>
+						<td>
+							<input id="sb-cc-settings" name="<?php echo esc_attr( $option ); ?>[settings_label]" type="text" class="regular-text" value="<?php echo esc_attr( (string) ( $settings['settings_label'] ?? __( 'Настройки', 'sb-cookie-consent' ) ) ); ?>" />
+							<p class="description"><?php echo esc_html__( 'Отваря категориите бисквитки в банера.', 'sb-cookie-consent' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="sb-cc-save"><?php echo esc_html__( 'Бутон „Запази избора“', 'sb-cookie-consent' ); ?></label></th>
+						<td>
+							<input id="sb-cc-save" name="<?php echo esc_attr( $option ); ?>[save_label]" type="text" class="regular-text" value="<?php echo esc_attr( (string) $settings['save_label'] ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php echo esc_html__( 'Само необходими', 'sb-cookie-consent' ); ?></th>
 						<td>
 							<label>
 								<input type="checkbox" name="<?php echo esc_attr( $option ); ?>[show_decline]" value="1" <?php checked( ! empty( $settings['show_decline'] ) ); ?> />
-								<?php echo esc_html__( 'Показвай бутон за отказ.', 'sb-cookie-consent' ); ?>
+								<?php echo esc_html__( 'Показвай бутон за отказ на незадължителните.', 'sb-cookie-consent' ); ?>
 							</label>
 							<p>
 								<label for="sb-cc-decline"><?php echo esc_html__( 'Текст на бутона', 'sb-cookie-consent' ); ?></label><br />
-								<input
-									id="sb-cc-decline"
-									name="<?php echo esc_attr( $option ); ?>[decline_label]"
-									type="text"
-									class="regular-text"
-									value="<?php echo esc_attr( (string) $settings['decline_label'] ); ?>"
-								/>
+								<input id="sb-cc-decline" name="<?php echo esc_attr( $option ); ?>[decline_label]" type="text" class="regular-text" value="<?php echo esc_attr( (string) $settings['decline_label'] ); ?>" />
 							</p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">
-							<label for="sb-cc-privacy-url"><?php echo esc_html__( 'Политика за поверителност', 'sb-cookie-consent' ); ?></label>
-						</th>
+						<th scope="row"><label for="sb-cc-policy-url"><?php echo esc_html__( 'Политика за бисквитки', 'sb-cookie-consent' ); ?></label></th>
 						<td>
-							<input
-								id="sb-cc-privacy-url"
-								name="<?php echo esc_attr( $option ); ?>[privacy_url]"
-								type="url"
-								class="regular-text"
-								placeholder="https://"
-								value="<?php echo esc_attr( (string) $settings['privacy_url'] ); ?>"
-							/>
+							<input id="sb-cc-policy-url" name="<?php echo esc_attr( $option ); ?>[cookie_policy_url]" type="url" class="regular-text" placeholder="https://" value="<?php echo esc_attr( (string) $settings['cookie_policy_url'] ); ?>" />
+							<p class="description">
+								<?php echo esc_html__( 'Създайте страница и поставете шорткода', 'sb-cookie-consent' ); ?>
+								<code>[sb_cookie_policy]</code>
+								<?php echo esc_html__( 'за пълния списък по категории.', 'sb-cookie-consent' ); ?>
+							</p>
 							<p>
-								<label for="sb-cc-privacy-label"><?php echo esc_html__( 'Текст на връзката', 'sb-cookie-consent' ); ?></label><br />
-								<input
-									id="sb-cc-privacy-label"
-									name="<?php echo esc_attr( $option ); ?>[privacy_label]"
-									type="text"
-									class="regular-text"
-									value="<?php echo esc_attr( (string) $settings['privacy_label'] ); ?>"
-								/>
+								<label for="sb-cc-policy-label"><?php echo esc_html__( 'Текст на връзката', 'sb-cookie-consent' ); ?></label><br />
+								<input id="sb-cc-policy-label" name="<?php echo esc_attr( $option ); ?>[cookie_policy_label]" type="text" class="regular-text" value="<?php echo esc_attr( (string) $settings['cookie_policy_label'] ); ?>" />
+							</p>
+							<label>
+								<input type="checkbox" name="<?php echo esc_attr( $option ); ?>[show_policy_link]" value="1" <?php checked( ! empty( $settings['show_policy_link'] ) ); ?> />
+								<?php echo esc_html__( 'Постоянен линк към политиката в долния край на сайта.', 'sb-cookie-consent' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php echo esc_html__( 'Промяна на избора', 'sb-cookie-consent' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="<?php echo esc_attr( $option ); ?>[show_reopen]" value="1" <?php checked( ! empty( $settings['show_reopen'] ) ); ?> />
+								<?php echo esc_html__( 'Показвай икона за повторно отваряне на банера след съгласие/отказ.', 'sb-cookie-consent' ); ?>
+							</label>
+							<p>
+								<label for="sb-cc-reopen"><?php echo esc_html__( 'Етикет (aria/title)', 'sb-cookie-consent' ); ?></label><br />
+								<input id="sb-cc-reopen" name="<?php echo esc_attr( $option ); ?>[reopen_label]" type="text" class="regular-text" value="<?php echo esc_attr( (string) $settings['reopen_label'] ); ?>" />
 							</p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">
-							<label for="sb-cc-position"><?php echo esc_html__( 'Позиция', 'sb-cookie-consent' ); ?></label>
-						</th>
+						<th scope="row"><label for="sb-cc-position"><?php echo esc_html__( 'Позиция', 'sb-cookie-consent' ); ?></label></th>
 						<td>
 							<select id="sb-cc-position" name="<?php echo esc_attr( $option ); ?>[position]">
 								<option value="bottom" <?php selected( $settings['position'], 'bottom' ); ?>><?php echo esc_html__( 'Долу', 'sb-cookie-consent' ); ?></option>
@@ -222,24 +233,84 @@ class SB_Cookie_Consent_Admin {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">
-							<label for="sb-cc-days"><?php echo esc_html__( 'Валидност (дни)', 'sb-cookie-consent' ); ?></label>
-						</th>
+						<th scope="row"><label for="sb-cc-days"><?php echo esc_html__( 'Валидност (дни)', 'sb-cookie-consent' ); ?></label></th>
 						<td>
-							<input
-								id="sb-cc-days"
-								name="<?php echo esc_attr( $option ); ?>[cookie_days]"
-								type="number"
-								min="1"
-								max="3650"
-								step="1"
-								class="small-text"
-								value="<?php echo esc_attr( (string) $settings['cookie_days'] ); ?>"
-							/>
-							<p class="description"><?php echo esc_html__( 'Колко дни да се помни изборът на посетителя.', 'sb-cookie-consent' ); ?></p>
+							<input id="sb-cc-days" name="<?php echo esc_attr( $option ); ?>[cookie_days]" type="number" min="1" max="3650" step="1" class="small-text" value="<?php echo esc_attr( (string) $settings['cookie_days'] ); ?>" />
 						</td>
 					</tr>
 				</table>
+
+				<h2 class="title"><?php echo esc_html__( 'Категории', 'sb-cookie-consent' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<?php foreach ( SB_Cookie_Consent_Settings::CATEGORIES as $cat ) : ?>
+						<tr>
+							<th scope="row"><?php echo esc_html( (string) $settings['category_labels'][ $cat ] ); ?></th>
+							<td>
+								<input type="text" class="regular-text" name="<?php echo esc_attr( $option ); ?>[category_labels][<?php echo esc_attr( $cat ); ?>]" value="<?php echo esc_attr( (string) $settings['category_labels'][ $cat ] ); ?>" />
+								<p>
+									<textarea class="large-text" rows="2" name="<?php echo esc_attr( $option ); ?>[category_descriptions][<?php echo esc_attr( $cat ); ?>]"><?php echo esc_textarea( (string) $settings['category_descriptions'][ $cat ] ); ?></textarea>
+								</p>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+
+				<h2 class="title"><?php echo esc_html__( 'Регистър на бисквитките', 'sb-cookie-consent' ); ?></h2>
+				<p class="description">
+					<?php echo esc_html__( 'Попълнете всяка бисквитка. За незадължителни скриптове от WordPress добавете script handle(и) — плъгинът няма да ги изпълнява без съгласие. Име с * важи като маска при изтриване (напр. _ga*).', 'sb-cookie-consent' ); ?>
+				</p>
+				<table class="widefat striped sb-cc-cookies" id="sb-cc-cookies">
+					<thead>
+						<tr>
+							<th><?php echo esc_html__( 'Име / маска', 'sb-cookie-consent' ); ?></th>
+							<th><?php echo esc_html__( 'Категория', 'sb-cookie-consent' ); ?></th>
+							<th><?php echo esc_html__( 'Доставчик', 'sb-cookie-consent' ); ?></th>
+							<th><?php echo esc_html__( 'Цел', 'sb-cookie-consent' ); ?></th>
+							<th><?php echo esc_html__( 'Срок', 'sb-cookie-consent' ); ?></th>
+							<th><?php echo esc_html__( 'Script handles', 'sb-cookie-consent' ); ?></th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+						if ( ! $cookies ) {
+							$cookies = array(
+								array(
+									'name'           => '',
+									'category'       => 'analytics',
+									'provider'       => '',
+									'purpose'        => '',
+									'duration'       => '',
+									'script_handles' => '',
+								),
+							);
+						}
+						foreach ( $cookies as $i => $cookie ) :
+							$this->render_cookie_row( (int) $i, $cookie, $option );
+						endforeach;
+						?>
+					</tbody>
+				</table>
+				<p>
+					<button type="button" class="button" id="sb-cc-add-cookie"><?php echo esc_html__( 'Добави бисквитка', 'sb-cookie-consent' ); ?></button>
+				</p>
+
+				<template id="sb-cc-cookie-row-tpl">
+					<?php
+					$this->render_cookie_row(
+						'__i__',
+						array(
+							'name'           => '',
+							'category'       => 'analytics',
+							'provider'       => '',
+							'purpose'        => '',
+							'duration'       => '',
+							'script_handles' => '',
+						),
+						$option
+					);
+					?>
+				</template>
 
 				<h2 class="title"><?php echo esc_html__( 'Цветове', 'sb-cookie-consent' ); ?></h2>
 				<table class="form-table" role="presentation">
@@ -247,13 +318,7 @@ class SB_Cookie_Consent_Admin {
 						<th scope="row"><?php echo esc_html__( 'От темата', 'sb-cookie-consent' ); ?></th>
 						<td>
 							<label>
-								<input
-									type="checkbox"
-									id="sb-cc-use-theme"
-									name="<?php echo esc_attr( $option ); ?>[use_theme_colors]"
-									value="1"
-									<?php checked( ! empty( $settings['use_theme_colors'] ) ); ?>
-								/>
+								<input type="checkbox" id="sb-cc-use-theme" name="<?php echo esc_attr( $option ); ?>[use_theme_colors]" value="1" <?php checked( ! empty( $settings['use_theme_colors'] ) ); ?> />
 								<?php echo esc_html__( 'Използвай главните цветове от активната тема (по подразбиране).', 'sb-cookie-consent' ); ?>
 							</label>
 							<p class="description">
@@ -280,22 +345,21 @@ class SB_Cookie_Consent_Admin {
 						<td><input id="sb-cc-text" class="sb-cc-color" name="<?php echo esc_attr( $option ); ?>[text_color]" type="text" value="<?php echo esc_attr( (string) $settings['text_color'] ); ?>" data-default-color="<?php echo esc_attr( $theme['text'] ); ?>" /></td>
 					</tr>
 					<tr class="sb-cc-color-row">
-						<th scope="row"><label for="sb-cc-btn-bg"><?php echo esc_html__( 'Фон на „Съгласявам се“', 'sb-cookie-consent' ); ?></label></th>
+						<th scope="row"><label for="sb-cc-btn-bg"><?php echo esc_html__( 'Фон на основния бутон', 'sb-cookie-consent' ); ?></label></th>
 						<td><input id="sb-cc-btn-bg" class="sb-cc-color" name="<?php echo esc_attr( $option ); ?>[button_bg]" type="text" value="<?php echo esc_attr( (string) $settings['button_bg'] ); ?>" data-default-color="<?php echo esc_attr( $theme['primary'] ); ?>" /></td>
 					</tr>
 					<tr class="sb-cc-color-row">
-						<th scope="row"><label for="sb-cc-btn-text"><?php echo esc_html__( 'Текст на „Съгласявам се“', 'sb-cookie-consent' ); ?></label></th>
+						<th scope="row"><label for="sb-cc-btn-text"><?php echo esc_html__( 'Текст на основния бутон', 'sb-cookie-consent' ); ?></label></th>
 						<td><input id="sb-cc-btn-text" class="sb-cc-color" name="<?php echo esc_attr( $option ); ?>[button_text]" type="text" value="<?php echo esc_attr( (string) $settings['button_text'] ); ?>" data-default-color="<?php echo esc_attr( $theme['button_text'] ); ?>" /></td>
 					</tr>
 					<tr class="sb-cc-color-row">
-						<th scope="row"><label for="sb-cc-decline-bg"><?php echo esc_html__( 'Фон на „Отказвам“', 'sb-cookie-consent' ); ?></label></th>
+						<th scope="row"><label for="sb-cc-decline-bg"><?php echo esc_html__( 'Фон на „Само необходими“', 'sb-cookie-consent' ); ?></label></th>
 						<td>
 							<input id="sb-cc-decline-bg" class="sb-cc-color" name="<?php echo esc_attr( $option ); ?>[decline_bg]" type="text" value="<?php echo esc_attr( (string) $settings['decline_bg'] ); ?>" data-default-color="transparent" />
-							<p class="description"><?php echo esc_html__( 'Може да е „transparent“.', 'sb-cookie-consent' ); ?></p>
 						</td>
 					</tr>
 					<tr class="sb-cc-color-row">
-						<th scope="row"><label for="sb-cc-decline-text"><?php echo esc_html__( 'Текст на „Отказвам“', 'sb-cookie-consent' ); ?></label></th>
+						<th scope="row"><label for="sb-cc-decline-text"><?php echo esc_html__( 'Текст на „Само необходими“', 'sb-cookie-consent' ); ?></label></th>
 						<td><input id="sb-cc-decline-text" class="sb-cc-color" name="<?php echo esc_attr( $option ); ?>[decline_text]" type="text" value="<?php echo esc_attr( (string) $settings['decline_text'] ); ?>" data-default-color="<?php echo esc_attr( $theme['text'] ); ?>" /></td>
 					</tr>
 				</table>
@@ -303,6 +367,35 @@ class SB_Cookie_Consent_Admin {
 				<?php submit_button( __( 'Запази промените', 'sb-cookie-consent' ) ); ?>
 			</form>
 		</div>
+		<?php
+	}
+
+	/**
+	 * @param int|string           $index  Row index.
+	 * @param array<string,string> $cookie Row data.
+	 * @param string               $option Option name.
+	 */
+	private function render_cookie_row( $index, array $cookie, string $option ): void {
+		$i = (string) $index;
+		?>
+		<tr class="sb-cc-cookie-row">
+			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][name]" value="<?php echo esc_attr( (string) ( $cookie['name'] ?? '' ) ); ?>" class="regular-text" placeholder="_ga" /></td>
+			<td>
+				<select name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][category]">
+					<?php
+					$cat_labels = $this->settings->default_category_labels();
+					foreach ( SB_Cookie_Consent_Settings::CATEGORIES as $cat ) :
+						?>
+						<option value="<?php echo esc_attr( $cat ); ?>" <?php selected( ( $cookie['category'] ?? '' ), $cat ); ?>><?php echo esc_html( (string) ( $cat_labels[ $cat ] ?? $cat ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][provider]" value="<?php echo esc_attr( (string) ( $cookie['provider'] ?? '' ) ); ?>" class="regular-text" /></td>
+			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][purpose]" value="<?php echo esc_attr( (string) ( $cookie['purpose'] ?? '' ) ); ?>" class="large-text" /></td>
+			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][duration]" value="<?php echo esc_attr( (string) ( $cookie['duration'] ?? '' ) ); ?>" class="regular-text" /></td>
+			<td><input type="text" name="<?php echo esc_attr( $option ); ?>[cookies][<?php echo esc_attr( $i ); ?>][script_handles]" value="<?php echo esc_attr( (string) ( $cookie['script_handles'] ?? '' ) ); ?>" class="regular-text" placeholder="google-analytics" /></td>
+			<td><button type="button" class="button-link-delete sb-cc-remove-cookie"><?php echo esc_html__( 'Премахни', 'sb-cookie-consent' ); ?></button></td>
+		</tr>
 		<?php
 	}
 }
